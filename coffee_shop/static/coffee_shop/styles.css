@@ -1,0 +1,76 @@
+body {
+    background: linear-gradient(180deg, #f9f4ee 0%, #f5efe8 100%);
+    color: #2f241f;
+    font-family: Arial, sans-serif;
+}
+
+.cozy-navbar {
+    background: #3a2618;
+}
+
+.brand-title {
+    color: #3a2618;
+    font-weight: 700;
+}
+
+.section-label {
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #8a5e3c;
+    font-size: 0.74rem;
+    font-weight: 700;
+}
+
+.stat-card {
+    border: 1px solid #ecdcc8;
+    border-radius: 16px;
+    background: #fffdfb;
+    box-shadow: 0 8px 24px rgba(58, 38, 24, 0.06);
+}
+
+.stat-label {
+    color: #8a5e3c;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-top: 0.5rem;
+    color: #2f241f;
+}
+
+.login-card {
+    border-radius: 18px;
+    background: #fffdfb;
+}
+
+.form-control,
+.form-select {
+    border-radius: 10px;
+    border: 1px solid #d9c7af;
+    padding: 0.7rem 0.9rem;
+}
+
+.btn-primary {
+    background: #8a5e3c;
+    border-color: #8a5e3c;
+}
+
+.btn-primary:hover {
+    background: #744d2f;
+    border-color: #744d2f;
+}
+
+.table thead th {
+    background: #f7efe7;
+    color: #563a2a;
+    font-weight: 600;
+}
+
+.badge {
+    font-size: 0.75rem;
+    padding: 0.5em 0.7em;
+}

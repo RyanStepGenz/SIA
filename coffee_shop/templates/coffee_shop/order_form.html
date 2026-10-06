@@ -1,0 +1,56 @@
+{% extends 'coffee_shop/base.html' %}
+
+{% block title %}Create Order | The Cozy Bean{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4">
+                <h2 class="mb-4">Create New Order</h2>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Order Status</label>
+                        {{ form.status }}
+                    </div>
+
+                    {{ formset.management_form }}
+                    <div class="table-responsive">
+                        <table class="table align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Menu Item</th>
+                                    <th>Quantity</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for line_form in formset %}
+                                    <tr>
+                                        <td>{{ line_form.menu_item }}</td>
+                                        <td>{{ line_form.quantity }}</td>
+                                    </tr>
+                                    {% if line_form.errors %}
+                                        <tr>
+                                            <td colspan="2" class="text-danger small">{{ line_form.errors }}</td>
+                                        </tr>
+                                    {% endif %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {% if form.errors %}
+                        <div class="text-danger small mb-3">{{ form.errors }}</div>
+                    {% endif %}
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">Save Order</button>
+                        <a href="{% url 'order_list' %}" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

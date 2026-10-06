@@ -1,0 +1,123 @@
+{% extends 'coffee_shop/base.html' %}
+
+{% block title %}Dashboard | The Cozy Bean{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <p class="section-label mb-1">Overview</p>
+        <h2 class="mb-0">Coffee Shop Dashboard</h2>
+    </div>
+    <a href="{% url 'menu_create' %}" class="btn btn-primary">+ Add Menu Item</a>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-6 col-xl-4">
+        <div class="card stat-card h-100">
+            <div class="card-body">
+                <div class="stat-label">Total Menu Items</div>
+                <div class="stat-number">{{ total_items }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-4">
+        <div class="card stat-card h-100">
+            <div class="card-body">
+                <div class="stat-label">Available Items</div>
+                <div class="stat-number">{{ available_items }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-4">
+        <div class="card stat-card h-100">
+            <div class="card-body">
+                <div class="stat-label">Out-of-Stock Items</div>
+                <div class="stat-number">{{ out_of_stock_items }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-4">
+        <div class="card stat-card h-100">
+            <div class="card-body">
+                <div class="stat-label">Total Orders</div>
+                <div class="stat-number">{{ total_orders }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-4">
+        <div class="card stat-card h-100">
+            <div class="card-body">
+                <div class="stat-label">Today's Orders</div>
+                <div class="stat-number">{{ todays_order_count }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-4">
+        <div class="card stat-card h-100">
+            <div class="card-body">
+                <div class="stat-label">Today's Sales</div>
+                <div class="stat-number">₱{{ todays_sales|floatformat:2 }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4 g-4">
+    <div class="col-lg-7">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white border-0 pb-0 pt-3">
+                <h5 class="mb-0">Recent Orders</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Date</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in recent_orders %}
+                                <tr>
+                                    <td><a href="{% url 'order_detail' order.pk %}">#{{ order.pk }}</a></td>
+                                    <td>{{ order.order_date|date:'M d, Y' }}</td>
+                                    <td>₱{{ order.total_amount|floatformat:2 }}</td>
+                                    <td><span class="badge {% if order.status == 'Completed' %}bg-success{% elif order.status == 'Cancelled' %}bg-secondary{% else %}bg-warning text-dark{% endif %}">{{ order.status }}</span></td>
+                                </tr>
+                            {% empty %}
+                                <tr><td colspan="4" class="text-center text-muted">No recent orders yet.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white border-0 pb-0 pt-3">
+                <h5 class="mb-0">Low Stock Items</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    {% for item in low_stock_items %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="fw-semibold">{{ item.name }}</div>
+                                <small class="text-muted">{{ item.category }}</small>
+                            </div>
+                            <span class="badge bg-warning text-dark">{{ item.stock_quantity }} left</span>
+                        </li>
+                    {% empty %}
+                        <li class="list-group-item text-muted text-center">No low-stock items.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

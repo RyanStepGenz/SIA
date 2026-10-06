@@ -1,0 +1,65 @@
+{% extends 'coffee_shop/base.html' %}
+
+{% block title %}Order #{{ order.pk }} | The Cozy Bean{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
+                    <div>
+                        <p class="section-label mb-1">Order</p>
+                        <h2 class="mb-0">#{{ order.pk }}</h2>
+                    </div>
+                    <span class="badge {% if order.status == 'Completed' %}bg-success{% elif order.status == 'Cancelled' %}bg-secondary{% else %}bg-warning text-dark{% endif %}">{{ order.status }}</span>
+                </div>
+
+                <p><strong>Date:</strong> {{ order.order_date|date:'M d, Y, h:i A' }}</p>
+                <p><strong>Total Amount:</strong> ₱{{ order.total_amount|floatformat:2 }}</p>
+
+                <h5 class="mt-4">Items</h5>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Qty</th>
+                            <th>Price</th>
+                            <th>Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in order.items.all %}
+                            <tr>
+                                <td>{{ item.menu_item.name }}</td>
+                                <td>{{ item.quantity }}</td>
+                                <td>₱{{ item.price|floatformat:2 }}</td>
+                                <td>₱{{ item.subtotal|floatformat:2 }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr><td colspan="4" class="text-center text-muted">No items in this order.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                {% if order.status == 'Pending' %}
+                    <div class="d-flex gap-2 mt-4">
+                        <form method="post" action="{% url 'complete_order' order.pk %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-success">Complete Order</button>
+                        </form>
+                        <form method="post" action="{% url 'cancel_order' order.pk %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-secondary">Cancel Order</button>
+                        </form>
+                    </div>
+                {% endif %}
+
+                <div class="mt-4">
+                    <a href="{% url 'order_list' %}" class="btn btn-outline-primary">Back to Orders</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
