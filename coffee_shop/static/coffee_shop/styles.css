@@ -47,6 +47,99 @@ body {
     background: #fffdfb;
 }
 
+.staff-login-page {
+    min-height: 100vh;
+    margin: 0;
+    padding: 22px 16px;
+    box-sizing: border-box;
+}
+
+.staff-login-card {
+    width: 100%;
+    max-width: 528px;
+    margin: 0 auto;
+    padding: 48px;
+    box-sizing: border-box;
+    border-radius: 18px;
+    background: #fffdfb;
+    box-shadow: 0 2px 5px rgba(58, 38, 24, 0.12);
+}
+
+.staff-login-header {
+    margin-bottom: 24px;
+    text-align: center;
+}
+
+.staff-login-header h1 {
+    margin: 0;
+    color: #2f241f;
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.staff-login-header p {
+    margin: 2px 0 0;
+    color: #43566c;
+}
+
+.staff-login-field {
+    display: grid;
+    grid-template-columns: 75px 205px;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 20px;
+}
+
+.staff-login-field label {
+    margin: 0;
+    color: #252525;
+}
+
+.staff-login-field input {
+    width: 205px;
+    min-width: 0;
+    height: 30px;
+    padding: 3px 6px;
+    box-sizing: border-box;
+    border: 1px solid #888;
+    border-radius: 2px;
+    background: #fff;
+    color: #252525;
+    font: inherit;
+}
+
+.staff-login-field input:focus {
+    border-color: #222;
+    outline: 2px solid #222;
+    outline-offset: -2px;
+}
+
+.staff-login-error {
+    margin-bottom: 16px;
+    color: #a12622;
+    font-size: 0.9rem;
+}
+
+.staff-login-card button {
+    width: 100%;
+    min-height: 39px;
+    border: 0;
+    border-radius: 5px;
+    background: #8a5e3c;
+    color: #fff;
+    font: inherit;
+    cursor: pointer;
+}
+
+.staff-login-card button:hover {
+    background: #744d2f;
+}
+
+.staff-login-card button:focus-visible {
+    outline: 3px solid #2f241f;
+    outline-offset: 3px;
+}
+
 .form-control,
 .form-select {
     border-radius: 10px;
@@ -73,4 +166,162 @@ body {
 .badge {
     font-size: 0.75rem;
     padding: 0.5em 0.7em;
+}
+
+.filter-card,
+.order-summary {
+    border: 1px solid #ecdcc8;
+    border-radius: 16px;
+    background: #fffdfb;
+}
+
+.order-summary {
+    top: 1rem;
+}
+
+.status-badge {
+    display: inline-block;
+    border-radius: 999px;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.status-pending {
+    background: #fff0c2;
+    color: #684708;
+}
+
+.status-preparing {
+    background: #dceeff;
+    color: #174b72;
+}
+
+.status-ready {
+    background: #e8e0f5;
+    color: #4b3471;
+}
+
+.status-completed {
+    background: #dcefe2;
+    color: #245b35;
+}
+
+.status-cancelled {
+    background: #f0e6e2;
+    color: #65463d;
+}
+
+.order-number {
+    color: #744d2f;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.order-number:hover {
+    text-decoration: underline;
+}
+
+.product-catalog {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 0.65rem;
+}
+
+.catalog-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    border: 1px solid #eee2d5;
+    border-radius: 10px;
+    padding: 0.7rem 0.8rem;
+    background: #fffdfa;
+}
+
+.quantity-column {
+    min-width: 105px;
+}
+
+.summary-lines {
+    max-height: 280px;
+    overflow-y: auto;
+}
+
+.order-meta > div {
+    border-left: 2px solid #ecdcc8;
+    padding-left: 0.8rem;
+}
+
+.order-notes {
+    border-radius: 10px;
+    background: #faf4ed;
+    padding: 1rem;
+}
+
+.receipt-paper {
+    max-width: 620px;
+    border: 1px solid #ecdcc8;
+    border-radius: 14px;
+    background: #fffdfb;
+    padding: 2rem;
+    box-shadow: 0 8px 24px rgba(58, 38, 24, 0.06);
+}
+
+.receipt-table {
+    border-top: 1px dashed #bca68f;
+    border-bottom: 1px dashed #bca68f;
+}
+
+@media (max-width: 575.98px) {
+    .staff-login-card {
+        padding: 36px 24px;
+    }
+
+    .staff-login-field {
+        grid-template-columns: 1fr;
+        gap: 6px;
+    }
+
+    .staff-login-field input {
+        width: 100%;
+    }
+
+    .order-lines-table {
+        min-width: 560px;
+    }
+
+    .receipt-paper {
+        padding: 1.25rem;
+    }
+}
+
+@media print {
+    body {
+        background: #fff;
+        color: #000;
+        font-family: Georgia, serif;
+    }
+
+    body > nav,
+    body > footer,
+    main > .receipt-actions,
+    .alert {
+        display: none !important;
+    }
+
+    main.container {
+        max-width: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    .receipt-paper {
+        max-width: none;
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+        padding: 0;
+    }
 }

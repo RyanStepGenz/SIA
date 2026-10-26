@@ -1,37 +1,39 @@
-{% extends 'coffee_shop/base.html' %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | The Cozy Bean</title>
+    <link rel="stylesheet" href="{% static 'coffee_shop/styles.css' %}">
+</head>
+<body class="staff-login-page">
+    <main class="staff-login-card">
+        <header class="staff-login-header">
+            <h1>The Cozy Bean</h1>
+            <p>Staff &amp; Manager Login</p>
+        </header>
 
-{% block title %}Login | The Cozy Bean{% endblock %}
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ next }}">
 
-{% block content %}
-<div class="row justify-content-center">
-    <div class="col-lg-5 col-md-7">
-        <div class="card login-card shadow-sm border-0">
-            <div class="card-body p-4 p-md-5">
-                <div class="text-center mb-4">
-                    <h2 class="brand-title mb-1">The Cozy Bean</h2>
-                    <p class="text-muted mb-0">Staff & Manager Login</p>
+            {% if form.non_field_errors %}
+                <div class="staff-login-error" role="alert">
+                    {{ form.non_field_errors }}
                 </div>
+            {% endif %}
 
-                <form method="post">
-                    {% csrf_token %}
-                    {% if form.non_field_errors %}
-                        <div class="alert alert-danger">{{ form.non_field_errors }}</div>
-                    {% endif %}
-
-                    <div class="mb-3">
-                        <label for="id_username" class="form-label">Username</label>
-                        {{ form.username }}
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="id_password" class="form-label">Password</label>
-                        {{ form.password }}
-                    </div>
-
-                    <button type="submit" class="btn btn-primary w-100">Login</button>
-                </form>
+            <div class="staff-login-field">
+                <label for="{{ form.username.id_for_label }}">Username</label>
+                {{ form.username }}
             </div>
-        </div>
-    </div>
-</div>
-{% endblock %}
+            <div class="staff-login-field">
+                <label for="{{ form.password.id_for_label }}">Password</label>
+                {{ form.password }}
+            </div>
+            <button type="submit">Login</button>
+        </form>
+    </main>
+</body>
+</html>

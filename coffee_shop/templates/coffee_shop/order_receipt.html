@@ -1,0 +1,44 @@
+{% extends 'coffee_shop/base.html' %}
+
+{% block title %}Receipt for Order #{{ order.pk }} | The Cozy Bean{% endblock %}
+
+{% block content %}
+<div class="receipt-actions d-flex justify-content-between align-items-center mb-4">
+    <a href="{% url 'order_detail' order.pk %}" class="btn btn-outline-secondary">Back to order</a>
+    <button type="button" class="btn btn-primary" onclick="window.print()">Print receipt</button>
+</div>
+
+<article class="receipt-paper mx-auto">
+    <header class="text-center mb-4">
+        <h1 class="h3 brand-title mb-1">The Cozy Bean</h1>
+        <p class="text-muted mb-2">Coffee Shop</p>
+        <h2 class="h5 mb-1">Receipt · Order #{{ order.pk }}</h2>
+        <p class="small text-muted mb-0">{{ order.order_date|date:'M d, Y, h:i A' }}</p>
+    </header>
+
+    {% if order.customer_name %}
+        <p class="small mb-3"><strong>Customer:</strong> {{ order.customer_name }}</p>
+    {% endif %}
+
+    <table class="table receipt-table">
+        <thead><tr><th>Item</th><th class="text-center">Qty</th><th class="text-end">Amount</th></tr></thead>
+        <tbody>
+            {% for item in order.items.all %}
+                <tr>
+                    <td>{{ item.menu_item.name }}<br><small class="text-muted">₱{{ item.price|floatformat:2 }} each</small></td>
+                    <td class="text-center">{{ item.quantity }}</td>
+                    <td class="text-end">₱{{ item.subtotal|floatformat:2 }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr><th colspan="2" class="text-end">Total</th><th class="text-end">₱{{ order.total_amount|floatformat:2 }}</th></tr>
+        </tfoot>
+    </table>
+
+    <footer class="text-center small text-muted mt-4">
+        <p class="mb-1">Status: {{ order.status }}</p>
+        <p class="mb-0">Thank you for visiting The Cozy Bean!</p>
+    </footer>
+</article>
+{% endblock %}

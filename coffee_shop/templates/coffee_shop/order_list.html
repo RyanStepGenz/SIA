@@ -1,50 +1,115 @@
 {% extends 'coffee_shop/base.html' %}
 
-{% block title %}Orders | The Cozy Bean{% endblock %}
+{% block title %}{% if is_history %}Order History{% else %}Order Management{% endif %} | The Cozy Bean{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
     <div>
         <p class="section-label mb-1">Transactions</p>
-        <h2 class="mb-0">Customer Orders</h2>
+        <h1 class="h2 mb-0">{% if is_history %}Order History{% else %}Order Management{% endif %}</h1>
     </div>
-    <a href="{% url 'order_create' %}" class="btn btn-primary">+ New Order</a>
+    <div class="d-flex gap-2">
+        <a href="{% url 'order_history' %}" class="btn btn-outline-primary">Order History</a>
+        <a href="{% url 'order_create' %}" class="btn btn-primary">+ Create New Order</a>
+    </div>
 </div>
+
+<form method="get" class="card filter-card mb-4">
+    <div class="card-body">
+        <div class="row g-3 align-items-end">
+            <div class="col-lg-3 col-md-6">
+                <label for="{{ filter_form.search.id_for_label }}" class="form-label">Search</label>
+                {{ filter_form.search }}
+            </div>
+            <div class="col-lg-2 col-md-6">
+                <label for="{{ filter_form.status.id_for_label }}" class="form-label">Status</label>
+                {{ filter_form.status }}
+            </div>
+            <div class="col-lg-2 col-md-4">
+                <label for="{{ filter_form.date_from.id_for_label }}" class="form-label">From</label>
+                {{ filter_form.date_from }}
+            </div>
+            <div class="col-lg-2 col-md-4">
+                <label for="{{ filter_form.date_to.id_for_label }}" class="form-label">To</label>
+                {{ filter_form.date_to }}
+            </div>
+            <div class="col-lg-2 col-md-4">
+                <label for="{{ filter_form.sort.id_for_label }}" class="form-label">Sort</label>
+                {{ filter_form.sort }}
+            </div>
+            <div class="col-lg-1 d-grid">
+                <button type="submit" class="btn btn-primary">Apply</button>
+            </div>
+        </div>
+        {% if filter_form.errors %}
+            <div class="text-danger small mt-2" role="alert">{{ filter_form.errors }}</div>
+        {% endif %}
+    </div>
+</form>
 
 <div class="card shadow-sm border-0">
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
+                <thead>
                     <tr>
-                        <th>Order ID</th>
-                        <th>Date</th>
+                        <th>Order</th>
+                        <th>Date &amp; time</th>
+                        <th>Customer</th>
                         <th>Items</th>
                         <th>Total</th>
                         <th>Status</th>
+                        <th>Cashier</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for order in orders %}
                         <tr>
-                            <td>#{{ order.pk }}</td>
+                            <td><a class="order-number" href="{% url 'order_detail' order.pk %}">#{{ order.pk }}</a></td>
                             <td>{{ order.order_date|date:'M d, Y, h:i A' }}</td>
-                            <td>{{ order.items.count }}</td>
+                            <td>{{ order.customer_name|default:'Walk-in' }}</td>
+                            <td>{{ order.item_units|default:0 }}</td>
                             <td>₱{{ order.total_amount|floatformat:2 }}</td>
+                            <td><span class="status-badge status-{{ order.status|slugify }}">{{ order.status }}</span></td>
+                            <td>{{ order.created_by.get_username|default:'—' }}</td>
                             <td>
-                                <span class="badge {% if order.status == 'Completed' %}bg-success{% elif order.status == 'Cancelled' %}bg-secondary{% else %}bg-warning text-dark{% endif %}">{{ order.status }}</span>
-                            </td>
-                            <td>
-                                <a href="{% url 'order_detail' order.pk %}" class="btn btn-sm btn-outline-primary">View</a>
+                                <div class="d-flex flex-wrap gap-1">
+                                    <a href="{% url 'order_detail' order.pk %}" class="btn btn-sm btn-outline-primary">View</a>
+                                    {% if order.status == 'Pending' or order.status == 'Preparing' %}
+                                        <a href="{% url 'order_update' order.pk %}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                                    {% endif %}
+                                    {% if order.status == 'Pending' or order.status == 'Preparing' or order.status == 'Ready' %}
+                                        <a href="{% url 'order_detail' order.pk %}#status-management" class="btn btn-sm btn-outline-secondary">Update status</a>
+                                    {% endif %}
+                                    <a href="{% url 'order_receipt' order.pk %}" class="btn btn-sm btn-outline-secondary">Receipt</a>
+                                </div>
                             </td>
                         </tr>
                     {% empty %}
-                        <tr><td colspan="6" class="text-center text-muted py-4">No orders placed yet.</td></tr>
+                        <tr><td colspan="8" class="text-center text-muted py-5">No orders match these filters.</td></tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
 </div>
+
+{% if page_obj.paginator.num_pages > 1 %}
+    <nav class="mt-4" aria-label="Order pages">
+        <ul class="pagination justify-content-center flex-wrap">
+            {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link" href="?{% if query_string %}{{ query_string }}&amp;{% endif %}page={{ page_obj.previous_page_number }}">Previous</a></li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">Previous</span></li>
+            {% endif %}
+            <li class="page-item disabled"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+            {% if page_obj.has_next %}
+                <li class="page-item"><a class="page-link" href="?{% if query_string %}{{ query_string }}&amp;{% endif %}page={{ page_obj.next_page_number }}">Next</a></li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">Next</span></li>
+            {% endif %}
+        </ul>
+    </nav>
+{% endif %}
 {% endblock %}

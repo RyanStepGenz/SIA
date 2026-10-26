@@ -8,7 +8,10 @@
         <p class="section-label mb-1">Overview</p>
         <h2 class="mb-0">Coffee Shop Dashboard</h2>
     </div>
-    <a href="{% url 'menu_create' %}" class="btn btn-primary">+ Add Menu Item</a>
+    <div class="d-flex flex-wrap gap-2">
+        <a href="{% url 'menu_create' %}" class="btn btn-outline-primary">+ Add Menu Item</a>
+        <a href="{% url 'order_create' %}" class="btn btn-primary">+ Create New Order</a>
+    </div>
 </div>
 
 <div class="row g-4">
@@ -62,6 +65,8 @@
     </div>
 </div>
 
+<p class="small text-muted mt-3 mb-0">Total Orders includes cancelled orders for recordkeeping. Today's Sales counts completed orders only.</p>
+
 <div class="row mt-4 g-4">
     <div class="col-lg-7">
         <div class="card shadow-sm border-0">
@@ -85,7 +90,7 @@
                                     <td><a href="{% url 'order_detail' order.pk %}">#{{ order.pk }}</a></td>
                                     <td>{{ order.order_date|date:'M d, Y' }}</td>
                                     <td>₱{{ order.total_amount|floatformat:2 }}</td>
-                                    <td><span class="badge {% if order.status == 'Completed' %}bg-success{% elif order.status == 'Cancelled' %}bg-secondary{% else %}bg-warning text-dark{% endif %}">{{ order.status }}</span></td>
+                                    <td><span class="status-badge status-{{ order.status|slugify }}">{{ order.status }}</span></td>
                                 </tr>
                             {% empty %}
                                 <tr><td colspan="4" class="text-center text-muted">No recent orders yet.</td></tr>

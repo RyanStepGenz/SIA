@@ -1,56 +1,289 @@
 {% extends 'coffee_shop/base.html' %}
 
-{% block title %}Create Order | The Cozy Bean{% endblock %}
+{% block title %}{% if order %}Edit Order #{{ order.pk }}{% else %}Create New Order{% endif %} | The Cozy Bean{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-lg-9">
-        <div class="card shadow-sm border-0">
-            <div class="card-body p-4">
-                <h2 class="mb-4">Create New Order</h2>
-                <form method="post">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        <label class="form-label">Order Status</label>
-                        {{ form.status }}
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+    <div>
+        <p class="section-label mb-1">{% if order %}Order #{{ order.pk }}{% else %}Transactions{% endif %}</p>
+        <h1 class="h2 mb-0">{% if order %}Edit Order{% else %}Create New Order{% endif %}</h1>
+    </div>
+    <a href="{% if order %}{% url 'order_detail' order.pk %}{% else %}{% url 'order_list' %}{% endif %}" class="btn btn-outline-secondary">Back</a>
+</div>
+
+<form method="post" id="order-form" novalidate>
+    {% csrf_token %}
+    {{ form.items }}
+    {{ form.submission_token }}
+
+    {% if form.non_field_errors %}
+        <div class="alert alert-danger" role="alert">{{ form.non_field_errors }}</div>
+    {% endif %}
+    {% if form.items.errors %}
+        <div class="alert alert-danger" role="alert">{{ form.items.errors }}</div>
+    {% endif %}
+    {% if form.submission_token.errors %}
+        <div class="alert alert-danger" role="alert">{{ form.submission_token.errors }}</div>
+    {% endif %}
+    <div id="order-validation" class="alert alert-danger d-none" role="alert" tabindex="-1"></div>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <section class="card shadow-sm border-0 mb-4" aria-labelledby="product-heading">
+                <div class="card-header bg-white border-0 pt-4 px-4">
+                    <h2 class="h5 mb-1" id="product-heading">Order items</h2>
+                    <p class="text-muted small mb-0">Select available products and set their quantities.</p>
+                </div>
+                <div class="card-body px-4">
+                    <div class="row g-3 align-items-end mb-3">
+                        <div class="col-sm-8">
+                            <label for="product-picker" class="form-label">Product</label>
+                            <select id="product-picker" class="form-select">
+                                <option value="">Choose a menu item</option>
+                                {% for product in products %}
+                                    <option value="{{ product.id }}" {% if product.stock_quantity <= 0 %}disabled{% endif %}>
+                                        {{ product.name }} · {{ product.category }} · ₱{{ product.price|floatformat:2 }}{% if product.stock_quantity <= 0 %} · Out of stock{% endif %}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-sm-4 d-grid">
+                            <button class="btn btn-outline-primary" id="add-product" type="button">Add product</button>
+                        </div>
                     </div>
 
-                    {{ formset.management_form }}
+                    <div class="product-catalog mb-4" aria-label="Menu availability">
+                        {% for product in products %}
+                            <div class="catalog-item">
+                                <div>
+                                    <div class="fw-semibold">{{ product.name }}</div>
+                                    <div class="small text-muted">{{ product.category }} · ₱{{ product.price|floatformat:2 }}</div>
+                                </div>
+                                {% if product.stock_quantity > 0 %}
+                                    <span class="badge bg-success">{{ product.stock_quantity }} available</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Out of stock</span>
+                                {% endif %}
+                            </div>
+                        {% empty %}
+                            <p class="text-muted mb-0">No products have been added to the menu yet.</p>
+                        {% endfor %}
+                    </div>
+
                     <div class="table-responsive">
-                        <table class="table align-middle">
+                        <table class="table align-middle order-lines-table mb-0">
                             <thead>
-                                <tr>
-                                    <th>Menu Item</th>
-                                    <th>Quantity</th>
-                                </tr>
+                                <tr><th>Product</th><th class="quantity-column">Quantity</th><th class="text-end">Subtotal</th><th><span class="visually-hidden">Remove</span></th></tr>
                             </thead>
-                            <tbody>
-                                {% for line_form in formset %}
-                                    <tr>
-                                        <td>{{ line_form.menu_item }}</td>
-                                        <td>{{ line_form.quantity }}</td>
-                                    </tr>
-                                    {% if line_form.errors %}
-                                        <tr>
-                                            <td colspan="2" class="text-danger small">{{ line_form.errors }}</td>
-                                        </tr>
-                                    {% endif %}
-                                {% endfor %}
-                            </tbody>
+                            <tbody id="order-lines"></tbody>
                         </table>
                     </div>
+                    <p id="empty-lines" class="text-center text-muted py-4 mb-0">No products added to this order.</p>
+                </div>
+            </section>
 
-                    {% if form.errors %}
-                        <div class="text-danger small mb-3">{{ form.errors }}</div>
-                    {% endif %}
-
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary">Save Order</button>
-                        <a href="{% url 'order_list' %}" class="btn btn-outline-secondary">Cancel</a>
+            <section class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <h2 class="h5 mb-3">Customer and notes</h2>
+                    <div class="mb-3">
+                        <label for="{{ form.customer_name.id_for_label }}" class="form-label">{{ form.customer_name.label }}</label>
+                        {{ form.customer_name }}
+                        {% if form.customer_name.errors %}<div class="text-danger small mt-1">{{ form.customer_name.errors }}</div>{% endif %}
                     </div>
-                </form>
-            </div>
+                    <div>
+                        <label for="{{ form.notes.id_for_label }}" class="form-label">{{ form.notes.label }}</label>
+                        {{ form.notes }}
+                        {% if form.notes.errors %}<div class="text-danger small mt-1">{{ form.notes.errors }}</div>{% endif %}
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="col-lg-4">
+            <aside class="card order-summary shadow-sm border-0 sticky-lg-top">
+                <div class="card-body p-4">
+                    <p class="section-label mb-1">Order summary</p>
+                    <h2 class="h5 mb-4">Review before saving</h2>
+                    <div id="summary-lines" class="summary-lines mb-3"></div>
+                    <div class="d-flex justify-content-between border-top pt-3">
+                        <span>Subtotal</span>
+                        <strong id="order-subtotal">₱0.00</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mt-2 fs-5">
+                        <span>Total</span>
+                        <strong class="brand-title" id="order-total">₱0.00</strong>
+                    </div>
+                    <p class="small text-muted mt-3 mb-4">No additional taxes or charges are configured. Prices are confirmed by the server when saved.</p>
+                    <button type="submit" class="btn btn-primary w-100">{% if order %}Save Order Changes{% else %}Save Order{% endif %}</button>
+                </div>
+            </aside>
         </div>
     </div>
-</div>
+</form>
+
+{{ products|json_script:"available-products" }}
+{{ initial_items|json_script:"initial-order-items" }}
+<script>
+(() => {
+    const products = JSON.parse(document.getElementById('available-products').textContent);
+    const initialItems = JSON.parse(document.getElementById('initial-order-items').textContent);
+    const form = document.getElementById('order-form');
+    const itemField = document.getElementById('{{ form.items.id_for_label }}');
+    const rows = document.getElementById('order-lines');
+    const summary = document.getElementById('summary-lines');
+    const picker = document.getElementById('product-picker');
+    const formatMoney = cents => '₱' + (cents / 100).toLocaleString('en-PH', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+    const priceInCents = value => {
+        const [whole, fraction = ''] = String(value).split('.');
+        return Number(whole) * 100 + Number((fraction + '00').slice(0, 2));
+    };
+
+    function addLine(productId = '', quantity = 1) {
+        const row = document.createElement('tr');
+        const productCell = document.createElement('td');
+        const quantityCell = document.createElement('td');
+        const subtotalCell = document.createElement('td');
+        const removeCell = document.createElement('td');
+        const select = document.createElement('select');
+        select.className = 'form-select form-select-sm line-product';
+        select.setAttribute('aria-label', 'Order product');
+        const placeholder = new Option('Choose a product', '');
+        select.add(placeholder);
+
+        products.forEach(product => {
+            const option = new Option(
+                `${product.name} · ${product.category} · ${formatMoney(priceInCents(product.price))}`,
+                product.id
+            );
+            if (product.stock_quantity <= 0 && String(product.id) !== String(productId)) {
+                option.disabled = true;
+            }
+            select.add(option);
+        });
+        select.value = String(productId);
+
+        const quantityInput = document.createElement('input');
+        quantityInput.type = 'number';
+        quantityInput.min = '1';
+        quantityInput.step = '1';
+        quantityInput.value = quantity;
+        quantityInput.className = 'form-control form-control-sm line-quantity';
+        quantityInput.setAttribute('aria-label', 'Product quantity');
+
+        const subtotal = document.createElement('span');
+        subtotal.className = 'line-subtotal';
+        const remove = document.createElement('button');
+        remove.type = 'button';
+        remove.className = 'btn btn-sm btn-outline-danger';
+        remove.textContent = 'Remove';
+        remove.setAttribute('aria-label', 'Remove product from order');
+        remove.addEventListener('click', () => {
+            row.remove();
+            updateSummary();
+        });
+
+        productCell.append(select);
+        quantityCell.append(quantityInput);
+        subtotalCell.className = 'text-end text-nowrap';
+        subtotalCell.append(subtotal);
+        removeCell.append(remove);
+        row.append(productCell, quantityCell, subtotalCell, removeCell);
+        rows.append(row);
+        select.addEventListener('change', updateSummary);
+        quantityInput.addEventListener('input', updateSummary);
+        updateSummary();
+    }
+
+    function updateSummary() {
+        let totalCents = 0;
+        const selectedItems = [];
+        const summaryRows = [];
+        let hasDuplicate = false;
+        let hasInvalidLine = false;
+        const seenProductIds = new Set();
+        rows.querySelectorAll('tr').forEach(row => {
+            const productId = row.querySelector('.line-product').value;
+            const quantityInput = row.querySelector('.line-quantity');
+            const quantity = Number(quantityInput.value);
+            const product = products.find(item => String(item.id) === productId);
+            quantityInput.max = product ? product.stock_quantity : '';
+            const validQuantity = Number.isSafeInteger(quantity)
+                && quantity > 0
+                && product
+                && quantity <= product.stock_quantity;
+            if (product && !validQuantity) hasInvalidLine = true;
+            const subtotalCents = product && validQuantity
+                ? priceInCents(product.price) * quantity
+                : 0;
+            row.querySelector('.line-subtotal').textContent = formatMoney(subtotalCents);
+            if (product && validQuantity) {
+                if (seenProductIds.has(productId)) hasDuplicate = true;
+                seenProductIds.add(productId);
+                totalCents += subtotalCents;
+                selectedItems.push({product_id: product.id, quantity});
+                const line = document.createElement('div');
+                line.className = 'd-flex justify-content-between gap-2 small mb-2';
+                const label = document.createElement('span');
+                label.textContent = `${product.name} × ${quantity}`;
+                const amount = document.createElement('strong');
+                amount.textContent = formatMoney(subtotalCents);
+                line.append(label, amount);
+                summaryRows.push(line);
+            }
+        });
+
+        itemField.value = JSON.stringify(selectedItems);
+        const validation = document.getElementById('order-validation');
+        if (hasDuplicate) {
+            validation.textContent = 'Each product can only appear once in an order.';
+            validation.classList.remove('d-none');
+        } else if (hasInvalidLine) {
+            validation.textContent = 'Check that every selected quantity is a positive whole number within stock.';
+            validation.classList.remove('d-none');
+        } else if (selectedItems.length === 0) {
+            validation.textContent = 'Add at least one available product with a valid quantity.';
+            validation.classList.remove('d-none');
+        } else {
+            validation.textContent = '';
+            validation.classList.add('d-none');
+        }
+        summary.replaceChildren(...summaryRows);
+        document.getElementById('empty-lines').hidden = rows.children.length > 0;
+        document.getElementById('order-subtotal').textContent = formatMoney(totalCents);
+        document.getElementById('order-total').textContent = formatMoney(totalCents);
+        return selectedItems.length > 0 && !hasDuplicate && !hasInvalidLine;
+    }
+
+    document.getElementById('add-product').addEventListener('click', () => {
+        if (!picker.value) {
+            picker.setCustomValidity('Choose a menu item to add.');
+            picker.focus();
+            picker.reportValidity();
+            return;
+        }
+        if ([...rows.querySelectorAll('.line-product')].some(select => select.value === picker.value)) {
+            picker.setCustomValidity('This product is already in the order.');
+            picker.reportValidity();
+            return;
+        }
+        picker.setCustomValidity('');
+        addLine(picker.value);
+        picker.value = '';
+    });
+
+    picker.addEventListener('change', () => picker.setCustomValidity(''));
+    form.addEventListener('submit', event => {
+        if (!updateSummary()) {
+            event.preventDefault();
+            document.getElementById('order-validation').focus();
+        }
+    });
+
+    initialItems.forEach(item => addLine(item.product_id, item.quantity));
+    updateSummary();
+})();
+</script>
 {% endblock %}
